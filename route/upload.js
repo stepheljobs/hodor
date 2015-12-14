@@ -8,23 +8,23 @@ var client = new S3FS('bucket-name/bucket-folder-optional', {
 });
 
 exports.goUpload = function(req, res) {
-  // client.create();
-  console.log('------> start uploading');
   var files = req.files.fileUpload;
-  files.forEach(function (file, index) {
-      console.log('##############');
-      console.log(file);
-      console.log(index);
+  var uploadedPhoto = [];
+
+  files.forEach(function (file, index, array) {
       var stream = fs.createReadStream(file.path);
       return client.writeFile(file.originalFilename, stream).then( function(etag) {
-         fs.unlink(file.path, function(err){
-           if (err) throw err;
-         });
-        //  https://ipostmo-s3-staging.s3.amazonaws.com/products/testimage1.jpg
-        //  res.send(file.originalFilename);
-        console.log('---> value: ', etag); //
-        console.log('uploaded success: ', index);
+        fs.unlink(file.path, function(err){
+          if (err) throw err;
+        });
+
+        var cb = 'https://' + s3config.bucketName + '.s3.amazonaws.com/' + s3config.folder + '/' + file.originalFilename;
+        uploadedPhoto.push(cb);
+        if(uploadedPhoto.length === array.length){
+          console.log(uploadedPhoto);
+          res.send(uploadedPhoto);
+        }
+
       });
   });
-  console.log('------> end here');
 };
